@@ -1,0 +1,42 @@
+name: Build AMI Pipeline
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ami:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install Packer
+        run: |
+          sudo apt update && sudo apt install -y unzip
+          curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+          sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+          sudo apt install -y packer
+
+      - name: Setup Ansible
+        uses: ./.github/actions/setup-ansible
+
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Build AMI with Packer
+        id: packer
+        run: |
+          cd infra/packer
+          packer init .
+          # Build AMI and extract ID
+          AMI_ID=$(packer build -machine-readable ami.pkr.hcl \
+            | awk -F, '/artifact,0,id/ {print $6}')
+          echo "AMI_ID=$AMI_ID" >> $GITHUB_ENV
+          echo "Baked AMI ID: $AMI_ID"
+
+      - name: Show AMI ID
+        run: echo "The baked AMI ID is ${{ env.AMI_ID }}"
