@@ -1,0 +1,87 @@
+---
+- name: Install Docker engine
+  ansible.builtin.apt:
+    name: docker.io
+    state: present
+    update_cache: yes
+
+- name: Enable Docker
+  ansible.builtin.systemd:
+    name: docker
+    enabled: yes
+    state: started
+
+# ✅ Install Docker Compose v2 properly
+- name: Ensure docker compose plugin directory exists
+  file:
+    path: /usr/libexec/docker/cli-plugins
+    state: directory
+    mode: '0755'
+
+- name: Install Docker Compose v2 plugin
+  get_url:
+    url: https://github.com/docker/compose/releases/download/v2.27.0/docker-compose-linux-x86_64
+    dest: /usr/libexec/docker/cli-plugins/docker-compose
+    mode: '0755'
+
+# ✅ App directory
+- name: Create app directory
+  file:
+    path: /opt/app
+    state: directory
+    mode: '0755'
+
+# ✅ Copy compose (NO secrets)
+- name: Copy docker-compose file
+  template:
+    src: templates/docker-compose.yaml
+    dest: /opt/app/docker-compose.yaml
+
+# ✅ Copy secrets loader
+- name: Copy load-secrets script
+  copy:
+    src: load-secrets.sh
+    dest: /usr/local/bin/load-secrets.sh
+    mode: '0755'
+
+# ✅ Copy systemd services
+- name: Copy load-secrets service
+  copy:
+    src: load-secrets.service
+    dest: /etc/systemd/system/load-secrets.service
+
+- name: Copy app service
+  copy:
+    src: app.service
+    dest: /etc/systemd/system/app.service
+
+# ✅ Reload systemd
+- name: Reload systemd
+  command: systemctl daemon-reexec
+
+# ✅ Enable services (NOT start app now)
+- name: Enable services
+  systemd:
+    name: "{{ item }}"
+    enabled: yes
+  loop:
+    - docker
+    - load-secrets.service
+    - app.service
+    - name: Copy systemd unit file
+  ansible.builtin.copy:
+    src: app.service
+    dest: /etc/systemd/system/app.service
+    mode: '0644'
+
+- name: Enable app service
+  ansible.builtin.systemd:
+    name: app.service
+    enabled: true
+    state: started
+
+- name: Deploy backend entrypoint script
+  ansible.builtin.template:
+    src: entrypoint.sh.j2
+    dest: /opt/app/entrypoint.sh
+    mode: '0755'

@@ -1,0 +1,8 @@
+---
+- name: Bake AMI with Docker and App
+  hosts: all
+  become: true
+
+  roles:
+    - app_service
+   
