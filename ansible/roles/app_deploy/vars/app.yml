@@ -1,0 +1,39 @@
+---
+# vars file for app_deploy
+# =====================
+# Docker Compose config
+# =====================
+
+compose_version: "3.8"
+app_network: app_net
+
+# =====================
+# Frontend
+# =====================
+
+frontend_image: myorg/frontend:latest
+frontend_container_name: frontend
+frontend_host_port: 3000
+frontend_container_port: 3000
+
+# =====================
+# Backend
+# =====================
+
+backend_image: myorg/backend:latest
+backend_container_name: backend
+backend_host_port: 8080
+backend_container_port: 8080
+backend_env_file: /opt/app/.env
+
+# =====================
+# Application config
+# =====================
+
+api_url: http://backend:8080
+
+# =====================
+# Host filesystem paths
+# =====================
+
+nginx_conf_path: /opt/app/nginx.conf
