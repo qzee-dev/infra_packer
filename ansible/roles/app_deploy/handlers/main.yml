@@ -1,2 +1,7 @@
 ---
 # handlers file for app_deploy
+handlers:
+  - name: Reload systemd
+    systemd:
+      daemon_reload: true
+
