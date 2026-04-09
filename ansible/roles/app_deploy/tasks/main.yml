@@ -85,3 +85,18 @@
     src: entrypoint.sh.j2
     dest: /opt/app/entrypoint.sh
     mode: '0755'
+    
+- name: Copy CloudWatch Agent fetch-config systemd unit
+  copy:
+    src: cloudwatch-agent-fetch-config.service
+    dest: /etc/systemd/system/cloudwatch-agent-fetch-config.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload systemd
+
+- name: Enable CloudWatch Agent fetch-config service
+  systemd:
+    name: cloudwatch-agent-fetch-config
+    enabled: true
+
