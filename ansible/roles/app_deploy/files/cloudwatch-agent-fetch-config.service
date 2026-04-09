@@ -1,0 +1,18 @@
+# /etc/systemd/system/cloudwatch-agent-fetch-config.service
+[Unit]
+Description=Fetch CloudWatch Agent configuration from SSM Parameter Store
+Documentation=https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Install-CloudWatch-Agent.html
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
+  -a fetch-config \
+  -m ec2 \
+  -c ssm:/cloudwatch/agent/ec2/default \
+  -s
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target
