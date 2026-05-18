@@ -6,6 +6,7 @@ on:
 jobs:
   build-ami:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -32,11 +33,10 @@ jobs:
         run: |
           cd infra/packer
           packer init .
-          # Build AMI and extract ID
           AMI_ID=$(packer build -machine-readable ami.pkr.hcl \
             | awk -F, '/artifact,0,id/ {print $6}')
           echo "AMI_ID=$AMI_ID" >> $GITHUB_ENV
           echo "Baked AMI ID: $AMI_ID"
 
       - name: Show AMI ID
-        run: echo "The baked AMI ID is ${{ env.AMI_ID }}"
+        run: echo "The baked AMI ID is $AMI_ID"
