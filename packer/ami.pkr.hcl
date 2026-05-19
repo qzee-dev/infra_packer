@@ -2,7 +2,7 @@ packer {
   required_plugins {
     amazon = {
       source  = "github.com/hashicorp/amazon"
-      version = ">= 1.
+      version = ">= 1.0.0"
     }
   }
 }
@@ -12,9 +12,10 @@ source "amazon-ebs" "node_ami" {
   instance_type = "t2.micro"
   ssh_username  = "ubuntu"
 
-  ami_name      = "node-ansible-ami-{{timestamp}}"
-  subnet_id = "subnet-00ab27bbe50d31242"
-  associate_public_ip_address = true  
+  ami_name = "node-ansible-ami-{{timestamp}}"
+
+  subnet_id                     = "subnet-00ab27bbe50d31242"
+  associate_public_ip_address  = true
 
   source_ami_filter {
     filters = {
@@ -31,10 +32,10 @@ build {
   sources = ["source.amazon-ebs.node_ami"]
 
   provisioner "ansible" {
-  playbook_file = "../ansible/playbook.yml"
+    playbook_file = "../ansible/playbook.yml"
 
-  extra_arguments = [
-    "--roles-path=../ansible/roles"
-  ]
-}
+    extra_arguments = [
+      "--roles-path=../ansible/roles"
+    ]
+  }
 }
