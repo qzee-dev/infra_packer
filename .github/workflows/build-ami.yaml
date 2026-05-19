@@ -12,11 +12,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Packer
-        run: |
-          sudo apt update && sudo apt install -y unzip
-          curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-          sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-          sudo apt install -y packer
+        uses: hashicorp/setup-packer@v3
 
       - name: Setup Ansible
         uses: ./.github/actions/setup-ansible
@@ -28,10 +24,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      # ✅ ADD THIS (critical debug)
+      - name: Debug repo structure
+        run: ls -R
+
       - name: Build AMI with Packer
         id: packer
+        working-directory: infra_packer/packer   # <-- adjust if needed
         run: |
-          cd infra/packer
           packer init .
           AMI_ID=$(packer build -machine-readable ami.pkr.hcl \
             | awk -F, '/artifact,0,id/ {print $6}')
