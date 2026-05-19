@@ -30,7 +30,7 @@ jobs:
 
       - name: Build AMI with Packer
         id: packer
-        working-directory: infra_packer/packer   # <-- adjust if needed
+        working-directory: packer   # <-- adjust if needed
         run: |
           packer init .
           AMI_ID=$(packer build -machine-readable ami.pkr.hcl \
