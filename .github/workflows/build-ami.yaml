@@ -30,12 +30,15 @@ jobs:
       - name: Build AMI with Packer
         working-directory: packer
         run: |
-          packer init .
+          export PACKER_LOG=1
+          export PACKER_LOG_PATH=packer-debug.log
 
-          echo "Running build..."
+          packer init .
           packer build ami.pkr.hcl | tee output.log
 
-          echo "Extracting AMI..."
+          echo "========= DEBUG LOG ========="
+          cat packer-debug.log || true
+
           AMI_ID=$(grep -o 'ami-[a-zA-Z0-9]*' output.log | tail -1)
 
           echo "AMI_ID=$AMI_ID" >> $GITHUB_ENV
@@ -48,3 +51,4 @@ jobs:
 
       - name: Show AMI ID
         run: echo "The baked AMI ID is $AMI_ID"
+
