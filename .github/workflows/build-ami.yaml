@@ -24,19 +24,27 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      # ✅ ADD THIS (critical debug)
       - name: Debug repo structure
         run: ls -R
 
       - name: Build AMI with Packer
-        id: packer
-        working-directory: packer   # <-- adjust if needed
+        working-directory: packer
         run: |
           packer init .
-          AMI_ID=$(packer build -machine-readable ami.pkr.hcl \
-            | awk -F, '/artifact,0,id/ {print $6}')
+
+          echo "Running build..."
+          packer build ami.pkr.hcl | tee output.log
+
+          echo "Extracting AMI..."
+          AMI_ID=$(grep -o 'ami-[a-zA-Z0-9]*' output.log | tail -1)
+
           echo "AMI_ID=$AMI_ID" >> $GITHUB_ENV
           echo "Baked AMI ID: $AMI_ID"
+
+          if [ -z "$AMI_ID" ]; then
+            echo "❌ AMI creation failed"
+            exit 1
+          fi
 
       - name: Show AMI ID
         run: echo "The baked AMI ID is $AMI_ID"

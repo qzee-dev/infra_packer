@@ -2,7 +2,7 @@ packer {
   required_plugins {
     amazon = {
       source  = "github.com/hashicorp/amazon"
-      version = ">= 1.0.0"
+      version = ">= 1.
     }
   }
 }
@@ -13,6 +13,8 @@ source "amazon-ebs" "node_ami" {
   ssh_username  = "ubuntu"
 
   ami_name      = "node-ansible-ami-{{timestamp}}"
+  subnet_id = "subnet-00ab27bbe50d31242"
+  associate_public_ip_address = true  
 
   source_ami_filter {
     filters = {
